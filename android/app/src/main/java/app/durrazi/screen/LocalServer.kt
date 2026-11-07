@@ -19,8 +19,8 @@ import java.util.concurrent.Executors
 
 /**
  * Tiny loopback HTTP server (127.0.0.1 only). It serves:
- *  /app/*     the screen UI from APK assets
- *  /shared/*  shared css/js/fonts/icons from APK assets
+ *  /app/FILE     the screen UI from APK assets
+ *  /shared/FILE  shared css/js/fonts/icons from APK assets
  *  /media/ID  downloaded media files (with HTTP Range, so video seeking/looping works on any WebView)
  *  /saf/KEY   files from a folder chosen through the system picker (USB drives etc.)
  *  /fs?p=...  files from a path chosen in the built-in browser fallback
