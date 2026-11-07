@@ -116,7 +116,7 @@ class MainActivity : Activity() {
                 )
                 val rows = ArrayList<Triple<String, String, String>>()
                 while (c != null && c.moveToNext()) rows.add(Triple(c.getString(0) ?: "", c.getString(1) ?: "", c.getString(2) ?: ""))
-                rows.sortBy { it.second.lowercase() }
+                rows.sortBy { r -> r.second.lowercase() }
                 for ((id, name, mime) in rows) {
                     if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
                         if (depth < 3) walk(id, depth + 1)
@@ -174,14 +174,16 @@ class MainActivity : Activity() {
         }
         @JavascriptInterface fun listMedia(): String {
             val a = JSONArray()
-            server.mediaDir.listFiles()?.forEach {
-                if (it.isFile && !it.name.endsWith(".part")) a.put(JSONObject().put("id", it.name).put("size", it.length()))
+            val files: Array<File> = server.mediaDir.listFiles() ?: emptyArray()
+            for (f in files) {
+                if (f.isFile && !f.name.endsWith(".part")) a.put(JSONObject().put("id", f.name).put("size", f.length()))
             }
             return a.toString()
         }
         @JavascriptInterface fun freeBytes(): Long = try { StatFs(server.mediaDir.absolutePath).availableBytes } catch (e: Exception) { 0L }
         @JavascriptInterface fun clearCache() {
-            server.mediaDir.listFiles()?.forEach { it.delete() }
+            val files: Array<File> = server.mediaDir.listFiles() ?: emptyArray()
+            for (f in files) f.delete()
             runOnUiThread { try { web.clearCache(true) } catch (_: Exception) {} }
         }
 
@@ -201,8 +203,9 @@ class MainActivity : Activity() {
             val o = JSONObject()
             if (!hasAllFiles()) { askAllFiles(); return o.put("perm", false).put("entries", JSONArray()).toString() }
             val arr = JSONArray()
-            (File(p).listFiles() ?: emptyArray()).sortedBy { it.name.lowercase() }.forEach {
-                if (!it.name.startsWith(".")) arr.put(JSONObject().put("n", it.name).put("d", it.isDirectory).put("p", it.absolutePath))
+            val kids: Array<File> = File(p).listFiles() ?: emptyArray()
+            for (f in kids.sortedBy { x -> x.name.lowercase() }) {
+                if (!f.name.startsWith(".")) arr.put(JSONObject().put("n", f.name).put("d", f.isDirectory).put("p", f.absolutePath))
             }
             return o.put("perm", true).put("entries", arr).toString()
         }
@@ -210,7 +213,8 @@ class MainActivity : Activity() {
         @JavascriptInterface fun scanDir(p: String): String {
             val out = JSONArray()
             fun walk(d: File, depth: Int) {
-                val list = (d.listFiles() ?: emptyArray()).sortedBy { it.name.lowercase() }
+                val kids: Array<File> = d.listFiles() ?: emptyArray()
+                val list = kids.sortedBy { x -> x.name.lowercase() }
                 for (f in list) {
                     if (f.name.startsWith(".")) continue
                     if (f.isDirectory) { if (depth < 3) walk(f, depth + 1) }
