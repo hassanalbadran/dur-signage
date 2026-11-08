@@ -71,7 +71,7 @@
   if (P.native) P.on('cloud', function () { loadClouds(); });
 
   App.register('settings', {
-    openCloud: function () { openId = 'cloud'; App.render('settings'); loadClouds(); if (!UI.st.linked) setTimeout(function () { connect('drive'); }, 500); },
+    openCloud: function () { openId = 'cloud'; App.render('settings'); loadClouds(); if (!UI.st.linked && P.native) setTimeout(function () { connect('drive'); }, 500); },
     render: function (col) {
       var i = 0;
       function add(el) { el.style.setProperty('--i', String(i++)); col.appendChild(el); }
