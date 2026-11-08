@@ -48,6 +48,8 @@
     if (m === 'not_allowed') return L('This account is not allowed to manage the screens', 'هذا الحساب غير مصرح له بإدارة الشاشات');
     if (s === 401 || m === 'AUTH' || /^auth_/.test(m)) return L('Sign-in expired, please sign in again', 'انتهت صلاحية تسجيل الدخول، سجّلي الدخول مرة أخرى');
     if (m === 'code_invalid') return L('The code is wrong or has expired', 'الكود غير صحيح أو منتهي الصلاحية');
+    if (/popup/i.test(m)) return L('The Google window was blocked. Allow pop-ups for this site and tap Connect again', 'تم حظر نافذة كوكل. اسمحي بالنوافذ المنبثقة لهذا الموقع واضغطي ربط مرة أخرى');
+    if (/access_denied/i.test(m)) return L('Google denied access. Add this account as a test user or publish the app', 'رفضت كوكل الدخول. أضيفي الحساب كمستخدم تجريبي أو انشري التطبيق');
     if (m === 'CANCELLED') return L('Cancelled', 'تم الإلغاء');
     if (m === 'EMPTY') return L('The file is empty', 'الملف فارغ');
     if (m === 'WIFI') return L('Waiting for Wi-Fi', 'بانتظار شبكة واي فاي');
