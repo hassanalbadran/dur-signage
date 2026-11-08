@@ -1,0 +1,55 @@
+# Run ONCE (Actions tab > Create signing key > Run workflow).
+# Creates the key that signs your apps, so every update installs over the previous one
+# and Google sign-in keeps the same SHA-1 fingerprint.
+# Create this file in your repository at:  .github/workflows/create-signing-key.yml
+name: Create signing key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  key:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create and encrypt the key
+        env:
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: |
+          if [ -z "$SIGNING_PASSPHRASE" ]; then
+            echo "::error::Add the secret SIGNING_PASSPHRASE first (a long random password, 20+ characters)."
+            exit 1
+          fi
+          if [ -f signing/signage.keystore.enc ]; then
+            echo "::error::A signing key already exists. Replacing it would stop updates from installing."
+            exit 1
+          fi
+          mkdir -p signing
+          keytool -genkeypair -storetype PKCS12 -keystore "$RUNNER_TEMP/signage.keystore" \
+            -alias drsignage -keyalg RSA -keysize 2048 -validity 36500 \
+            -storepass "$SIGNING_PASSPHRASE" -keypass "$SIGNING_PASSPHRASE" \
+            -dname "CN=Dur Al-Razi Signage, O=Open Source"
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in "$RUNNER_TEMP/signage.keystore" \
+            -out signing/signage.keystore.enc -pass env:SIGNING_PASSPHRASE
+          keytool -list -v -keystore "$RUNNER_TEMP/signage.keystore" -alias drsignage \
+            -storepass "$SIGNING_PASSPHRASE" | grep -E "SHA1|SHA256" | tee fingerprint.txt
+          {
+            echo "### Signing key created"
+            echo "Use this SHA-1 when creating the Android OAuth client in Google Cloud:"
+            echo '```'
+            grep SHA1 fingerprint.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          rm fingerprint.txt
+
+      - name: Save the encrypted key in the repository
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add signing/signage.keystore.enc
+          git commit -m "Add encrypted signing key"
+          git push
