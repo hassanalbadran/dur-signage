@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="upload" android:enabled="true" android:icon="@drawable/ic_sc_upload"
+        android:shortcutShortLabel="@string/sc_upload" android:shortcutLongLabel="@string/sc_upload">
+        <intent android:action="app.durrazi.signage.UPLOAD" android:targetPackage="app.durrazi.signage" android:targetClass="app.durrazi.signage.MainActivity" />
+    </shortcut>
+    <shortcut android:shortcutId="remote" android:enabled="true" android:icon="@drawable/ic_sc_remote"
+        android:shortcutShortLabel="@string/sc_remote" android:shortcutLongLabel="@string/sc_remote">
+        <intent android:action="app.durrazi.signage.REMOTE" android:targetPackage="app.durrazi.signage" android:targetClass="app.durrazi.signage.MainActivity" />
+    </shortcut>
+</shortcuts>

@@ -1,0 +1,85 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// Values injected by the GitHub workflow from repository secrets. Nothing secret is stored in this file.
+def envOr = { String name, String fallback -> System.getenv(name) ?: fallback }
+def versionCodeValue = envOr('APP_VERSION_CODE', '1').toInteger()
+def versionNameValue = envOr('APP_VERSION_NAME', '1.0.0')
+def keystorePath = System.getenv('SIGN_KEYSTORE')
+
+// The web UI is shared with the website: copy it into the APK assets at build time.
+def webOut = layout.buildDirectory.dir('web-assets')
+tasks.register('prepareWeb', Copy) {
+    from('../../../web/admin') { into 'web/admin' }
+    from('../../../web/shared') { into 'web/shared' }
+    into webOut
+}
+
+android {
+    namespace 'app.durrazi.signage'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.durrazi.signage'
+        minSdk 24
+        targetSdk 34
+        versionCode versionCodeValue
+        versionName versionNameValue
+
+        buildConfigField 'String', 'GAS_URL', '"' + envOr('GAS_URL', '') + '"'
+        buildConfigField 'String', 'GITHUB_REPO', '"' + envOr('GITHUB_REPO', '') + '"'
+        buildConfigField 'String', 'RT_SERVER', '"' + envOr('RT_SERVER', 'https://ntfy.sh') + '"'
+        buildConfigField 'String', 'DROPBOX_APP_KEY', '"' + envOr('DROPBOX_APP_KEY', '') + '"'
+        buildConfigField 'String', 'ONEDRIVE_CLIENT_ID', '"' + envOr('ONEDRIVE_CLIENT_ID', '') + '"'
+    }
+
+    buildFeatures { buildConfig true }
+
+    sourceSets {
+        main { assets.srcDir webOut }
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('SIGN_PASSWORD')
+                keyAlias 'drsignage'
+                keyPassword System.getenv('SIGN_PASSWORD')
+                storeType 'PKCS12'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig keystorePath ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    androidResources { noCompress 'woff2', 'js' }
+}
+
+tasks.matching { it.name == 'preBuild' }.configureEach { dependsOn 'prepareWeb' }
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.1'
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'
+}

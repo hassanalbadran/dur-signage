@@ -1,0 +1,7 @@
+<resources>
+    <color name="bg">#F1F6F7</color>
+    <color name="bg_night">#0A1619</color>
+    <color name="teal">#0E8A84</color>
+    <color name="widget_bg">#EE11242A</color>
+    <color name="widget_fg">#E5F2F4</color>
+</resources>

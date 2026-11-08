@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:gravity="center" android:padding="12dp"
+    android:background="@drawable/bg_widget">
+    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@drawable/ic_w_upload" android:contentDescription="upload" />
+    <TextView android:id="@+id/w_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:text="Upload" android:textColor="@color/widget_fg" android:textStyle="bold" />
+</LinearLayout>

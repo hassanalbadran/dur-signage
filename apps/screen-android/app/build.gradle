@@ -1,0 +1,76 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// Injected by the GitHub workflow (see github-setup/workflows). Defaults keep local builds working.
+def versionCodeValue = (System.getenv('APP_VERSION_CODE') ?: '1').toInteger()
+def versionNameValue = System.getenv('APP_VERSION_NAME') ?: '1.0.0'
+def keystorePath = System.getenv('SIGN_KEYSTORE')
+
+// The screen UI is shared with the website: copy it into the APK assets at build time.
+def webOut = layout.buildDirectory.dir('web-assets')
+tasks.register('prepareWeb', Copy) {
+    from('../../../web/screen') { into 'web/screen' }
+    from('../../../web/shared') { into 'web/shared' }
+    into webOut
+}
+
+android {
+    namespace 'app.durrazi.screen'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.durrazi.screen'
+        minSdk 21
+        targetSdk 33
+        versionCode versionCodeValue
+        versionName versionNameValue
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    sourceSets {
+        main { assets.srcDir webOut }
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('SIGN_PASSWORD')
+                keyAlias 'drsignage'
+                keyPassword System.getenv('SIGN_PASSWORD')
+                storeType 'PKCS12'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig keystorePath ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    androidResources { noCompress 'woff2', 'js' }
+}
+
+tasks.matching { it.name == 'preBuild' }.configureEach { dependsOn 'prepareWeb' }
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+}
