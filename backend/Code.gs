@@ -31,7 +31,7 @@ var PROPS = PropertiesService.getScriptProperties();
 /* ------------------------------------------------------------------ */
 
 function escapeUnicode_(text) {
-  return text.replace(/[\u0080-￿]/g, function (c) {
+  return text.replace(/[\u0080-\uffff]/g, function (c) {
     return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
   });
 }
@@ -52,7 +52,7 @@ function kvGet(key, fallback) {
 }
 
 function kvSet(key, value) {
-  var text = escapeUnicode_(JSON.stringify(value));
+  var text = escapeUnicode_(JSON.stringify(value === undefined ? null : value) || 'null');
   var count = Math.max(1, Math.ceil(text.length / 8000));
   var previous = Number(PROPS.getProperty(key + '#n') || 0);
   var batch = {};
