@@ -18,7 +18,9 @@
     });
   }
   function settle(ok, v) { if (!pend) return; var p = pend; pend = null; if (ok) p.res(v); else p.rej(v); }
-  function init() {
+  var ready = null;
+  function init() { return ready || (ready = initReal()); }
+  function initReal() {
     return loadGis().then(function () {
       client = google.accounts.oauth2.initTokenClient({
         client_id: C.GOOGLE_CLIENT_ID, scope: SCOPE,
@@ -33,7 +35,9 @@
     });
   }
   function request(prompt) {
-    return new Promise(function (res, rej) { pend = { res: res, rej: rej }; client.requestAccessToken({ prompt: prompt }); });
+    return init().then(function () {
+      return new Promise(function (res, rej) { pend = { res: res, rej: rej }; client.requestAccessToken({ prompt: prompt }); });
+    });
   }
   function token() {
     if (tok && Date.now() < exp) return Promise.resolve(tok);
