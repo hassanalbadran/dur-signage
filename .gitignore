@@ -1,0 +1,13 @@
+# Generated at build time from secrets - never commit
+web/shared/config.js
+web/shared/assets/
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+*.keystore
+*.jks
+# Misc
+node_modules/
+.DS_Store
